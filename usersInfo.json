@@ -1,0 +1,35 @@
+[
+  {
+    "firstName": "Mihai",
+    "lastName": "Dumitru",
+    "cnp": "1931122345612",
+    "sex": "M",
+    "dateOfBirth": "",
+    "dateOfExpiry": ""
+  },
+  {
+    "firstName": "Ioana",
+    "lastName": "Adam",
+    "cnp": "1850911028493",
+    "sex": "F",
+    "dateOfBirth": "",
+    "dateOfExpiry": ""
+  },
+  {
+    "firstName": "Sebastian",
+    "lastName": "Popescu",
+    "cnp": "1931122345612",
+    "sex": "M",
+    "dateOfBirth": "",
+    "dateOfExpiry": ""
+  },
+  {
+    "firstName": "Teodora",
+    "lastName": "Sava",
+    "cnp": "1931122345612",
+    "sex": "M",
+    "dateOfBirth": "",
+    "dateOfExpiry": ""
+  }
+]
+

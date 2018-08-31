@@ -132,4 +132,4 @@ const broadcastLatest = () => {
 
 
 
-export {connectToPeers, broadcastLatest, initP2PServer, getSockets, somethingRicked};
+export {connectToPeers, broadcastLatest, initP2PServer, getSockets};

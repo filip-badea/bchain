@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.somethingRicked = exports.getSockets = exports.initP2PServer = exports.broadcastLatest = exports.connectToPeers = undefined;
+exports.getSockets = exports.initP2PServer = exports.broadcastLatest = exports.connectToPeers = undefined;
 
 var _ws = require('ws');
 
@@ -156,4 +156,3 @@ exports.connectToPeers = connectToPeers;
 exports.broadcastLatest = broadcastLatest;
 exports.initP2PServer = initP2PServer;
 exports.getSockets = getSockets;
-exports.somethingRicked = somethingRicked;
