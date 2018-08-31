@@ -2,7 +2,7 @@ import  bodyParser from 'body-parser';
 import  express from 'express';
 
 
-import {Block, createNewBlockWithData, getBlockchain, getLastBlock} from './blockchain';
+import {createNewBlockWithData, getBlockchain} from './blockchain';
 import {connectToPeers, getSockets, initP2PServer} from './peer2peer';
 
 

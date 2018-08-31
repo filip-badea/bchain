@@ -3,33 +3,49 @@
     "firstName": "Mihai",
     "lastName": "Dumitru",
     "cnp": "1931122345612",
+    "fullAddress": "",
+    "region": "Valcea",
     "sex": "M",
     "dateOfBirth": "",
-    "dateOfExpiry": ""
+    "dateOfExpiry": "",
+    "votes": [],
+    "hasVoted": false
   },
   {
     "firstName": "Ioana",
     "lastName": "Adam",
     "cnp": "1850911028493",
+    "fullAddress": "Bucuresti, Sector 5",
+    "region": "",
     "sex": "F",
     "dateOfBirth": "",
-    "dateOfExpiry": ""
+    "dateOfExpiry": "",
+    "votes": [],
+    "hasVoted": false
   },
   {
     "firstName": "Sebastian",
     "lastName": "Popescu",
     "cnp": "1931122345612",
+    "fullAddress": "",
+    "region": "Bucuresti, Sector 1",
     "sex": "M",
     "dateOfBirth": "",
-    "dateOfExpiry": ""
+    "dateOfExpiry": "",
+    "votes": [],
+    "hasVoted": false
   },
   {
     "firstName": "Teodora",
     "lastName": "Sava",
     "cnp": "1931122345612",
+    "fullAddress": "",
+    "region": "Bucuresti, Sector 3",
     "sex": "M",
     "dateOfBirth": "",
-    "dateOfExpiry": ""
+    "dateOfExpiry": "",
+    "votes": [],
+    "hasVoted": false
   }
 ]
 

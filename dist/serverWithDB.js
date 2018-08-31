@@ -20,8 +20,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var usersInfo = require('./usersInfo.json');
 var http_port = process.env.HTTP_PORT || 3005;
 
-// Add all userInfo to the MongoDB
+/**
+ * Add all userInfo to the MongoDB
+ */
 var initDatabase = function initDatabase() {
+
     _mongodb.MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
         if (err) {
             return console.dir(err);
@@ -29,26 +32,32 @@ var initDatabase = function initDatabase() {
         var myAwesomeDB = database.db('exampleDb');
         var collection = myAwesomeDB.collection('test');
         collection.insertMany(usersInfo, { w: 1 }, function (err, result) {});
-        // collection.find().toArray(function (err, items) {
-        //     console.log("Items part 1: ", items);
-        // });
-        collection.findOne({ firstName: "Mihai" }, function (err, item) {
+
+        collection.findOne({ cnp: "1931122345612" }, function (err, item) {
             console.log(item);
         });
         database.close();
     });
 };
 
-// The server that will listen to mobile requests
+/**
+ * The server that will listen to mobile requests
+ */
 var initAndroidListenerServer = function initAndroidListenerServer() {
+
     var app = (0, _express2.default)();
     app.use(_bodyParser2.default.json());
 
     app.post('/sendVote', function (req, res) {
         var person = req.body.data;
-        queryForPersonAndSendToMiner(person, sendToMiner, function (message) {
-            res.send(message);
-        });
+        if (person !== null) {
+            queryForPersonAndSendToMiner(person, sendToMiner, function (message) {
+                console.log("Response to android", message);
+                res.send(message);
+            });
+        } else {
+            res.send("No information sent");
+        }
     });
     app.listen(http_port, function () {
         return console.log('Listening http on port: ' + http_port);
@@ -63,30 +72,43 @@ var showAllBlocks = function showAllBlocks() {
     });
 };
 
-var sendToMiner = function sendToMiner(vote, callback) {
-    _axios2.default.post('http://127.0.0.1:3001/mineBlock', vote).then(callback).catch(function (error) {
+var sendToMiner = function sendToMiner(vote, responseToAndroid) {
+    _axios2.default.post('http://127.0.0.1:3001/mineBlock', { data: vote }).then(responseToAndroid).catch(function (error) {
         console.log(error);
     });
 };
 
-// Connect to the db and query For credentials
+/**
+ * Connect to the Mongo database and query For credentials
+ */
 var queryForPersonAndSendToMiner = function queryForPersonAndSendToMiner(person, sendToMiner, responseToAndroid) {
-    console.log("Item searched", person);
-    var promise = _mongodb.MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
+    console.log("Item to be searched", person);
+    _mongodb.MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
         if (err) {
             return console.dir(err);
         }
         var myAwesomeDB = database.db('exampleDb');
         var collection = myAwesomeDB.collection('test');
 
-        collection.findOne(person, function (err, itemReturned) {
-            console.log("Item searched", itemReturned !== null);
-            if (itemReturned !== null) {
-                if (itemReturned.voted !== true) {
-                    sendToMiner(itemReturned, responseToAndroid("Voted Succesfully"));
+        collection.findOne({ cnp: person.cnp }, function (err, infoReturned) {
+            console.log("Item searched", infoReturned !== null);
+            if (infoReturned !== null) {
+                if (checkPersonValidity(person, infoReturned)) {
+                    if (infoReturned.voted !== true) {
+                        sendToMiner({
+                            region: person.region,
+                            voteType: person.voteType,
+                            voteChoice: person.voteChoice,
+                            timestamp: person.timestamp
+                        }, responseToAndroid("Voted Succesfully"));
+                    } else {
+                        responseToAndroid("Already voted");
+                    }
                 } else {
-                    responseToAndroid("Already voted");
+                    responseToAndroid("Incorrect information - info not valid");
                 }
+            } else {
+                responseToAndroid("Can't found person");
             }
         });
 
@@ -95,8 +117,12 @@ var queryForPersonAndSendToMiner = function queryForPersonAndSendToMiner(person,
     });
 };
 
+var checkPersonValidity = function checkPersonValidity(person, infoReturned) {
+    return person.firstName === infoReturned.firstName && person.cnp === infoReturned.cnp && person.fullAddress === infoReturned.fullAddress && person.lastName === infoReturned.lastName && person.region === infoReturned.region && person.sex === infoReturned.sex && person.dateOfBirth === infoReturned.dateOfBirth && person.dateOfExpiry === infoReturned.dateOfExpiry;
+};
+
 initDatabase();
-// initAndroidListenerServer();
+initAndroidListenerServer();
 
 // showAllBlocks(receivedBlocks);
 //console.log("Found person", queryForPersonAndSendToMiner({mykey:1}));

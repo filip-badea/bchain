@@ -9,42 +9,52 @@ var http_port = process.env.HTTP_PORT || 3005;
 
 
 
-
-// Add all userInfo to the MongoDB
+/**
+ * Add all userInfo to the MongoDB
+ */
 const initDatabase = () => {
+
     MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
         if (err) {
             return console.dir(err);
         }
-        const myAwesomeDB = database.db('exampleDb')
+        const myAwesomeDB = database.db('exampleDb');
         var collection = myAwesomeDB.collection('test');
         collection.insertMany(usersInfo, {w: 1}, function (err, result) {
 
 
         });
-        // collection.find().toArray(function (err, items) {
-        //     console.log("Items part 1: ", items);
-        // });
-        collection.findOne({firstName: "Mihai"}, function (err, item) {
+
+        collection.findOne({cnp: "1931122345612"}, function (err, item) {
             console.log(item);
         });
         database.close();
 
     });
-}
+};
 
 
 
 
-
-// The server that will listen to mobile requests
+/**
+ * The server that will listen to mobile requests
+ */
 const initAndroidListenerServer = () => {
+
     const app = express();
     app.use(bodyParser.json());
 
     app.post('/sendVote', (req, res) => {
         const person = req.body.data;
-        queryForPersonAndSendToMiner(person, sendToMiner, (message) => {res.send(message);});
+        if (person !== null) {
+            queryForPersonAndSendToMiner(person, sendToMiner, (message) => {
+                console.log("Response to android", message);
+                res.send(message);
+            });
+        } else {
+            res.send("No information sent")
+        }
+
 
     });
     app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
@@ -62,22 +72,24 @@ const showAllBlocks = () => {
         });
 };
 
-const sendToMiner = (vote, callback) => {
+const sendToMiner = (vote, responseToAndroid) => {
     axios.post(
         'http://127.0.0.1:3001/mineBlock',
-        vote
+        {data: vote}
         )
-        .then(callback)
+        .then(responseToAndroid)
         .catch(function (error) {
             console.log(error);
         });
 };
 
 
-// Connect to the db and query For credentials
+/**
+ * Connect to the Mongo database and query For credentials
+ */
 const queryForPersonAndSendToMiner = (person, sendToMiner, responseToAndroid) => {
-  console.log("Item searched", person);
-      var promise = MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
+  console.log("Item to be searched", person);
+      MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
           if (err) {
               return console.dir(err);
           }
@@ -85,27 +97,52 @@ const queryForPersonAndSendToMiner = (person, sendToMiner, responseToAndroid) =>
           let collection = myAwesomeDB.collection('test');
 
 
-          collection.findOne(person, function (err, itemReturned) {
-              console.log("Item searched", itemReturned !== null);
-              if (itemReturned !== null) {
-                  if (itemReturned.voted !== true) {
-                      sendToMiner(itemReturned, responseToAndroid("Voted Succesfully"));
+          collection.findOne({cnp: person.cnp}, function (err, infoReturned) {
+              console.log("Item searched", infoReturned !== null);
+              if (infoReturned !== null) {
+                  if (checkPersonValidity(person, infoReturned)) {
+                      if (infoReturned.voted !== true) {
+                          sendToMiner(
+                              {
+                                  region: person.region,
+                                  voteType: person.voteType,
+                                  voteChoice: person.voteChoice,
+                                  timestamp: person.timestamp
+                              },
+                              responseToAndroid("Voted Succesfully"));
+
+                      } else {
+                          responseToAndroid("Already voted");
+                      }
+                  } else {
+                      responseToAndroid("Incorrect information - info not valid");
                   }
-                  else {
-                      responseToAndroid("Already voted");
-                  }
+              } else {
+                  responseToAndroid("Can't found person");
 
               }
           });
 
-          collection.remove();
           database.close();
+
       });
   };
 
+const checkPersonValidity = (person, infoReturned) => {
+    return person.firstName === infoReturned.firstName &&
+        person.cnp === infoReturned.cnp &&
+        person.fullAddress === infoReturned.fullAddress &&
+        person.lastName === infoReturned.lastName &&
+        person.region === infoReturned.region &&
+        person.sex === infoReturned.sex &&
+        person.dateOfBirth === infoReturned.dateOfBirth &&
+        person.dateOfExpiry === infoReturned.dateOfExpiry
+
+};
+
 
 initDatabase();
-// initAndroidListenerServer();
+initAndroidListenerServer();
 
 // showAllBlocks(receivedBlocks);
 //console.log("Found person", queryForPersonAndSendToMiner({mykey:1}));
