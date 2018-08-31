@@ -38,6 +38,20 @@ const initDatabase = () => {
 
 /**
  * The server that will listen to mobile requests
+ * Example of valid post request:
+ *  curl -H "Content-type:application/json"
+ *  --data '{"data": {
+ *  "firstName": "Mihai",
+ *  "lastName": "Dumitru",
+ * "cnp": "1931122345612",
+ * "fullAddress": "",
+ * "region": "Valcea",
+ * "sex": "M",
+ * "dateOfBirth": "",
+ * "dateOfExpiry": "",
+ * "voteType":"prezidential",
+ * "voteChoice": "Presedinte1",
+ * "timeStamp": "31-08-2018" }}' http://localhost:3005/sendVote
  */
 const initAndroidListenerServer = () => {
 
