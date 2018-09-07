@@ -20,8 +20,8 @@ const initDatabase = () => {
         }
         const myAwesomeDB = database.db('exampleDb');
         var collection = myAwesomeDB.collection('test');
+        console.log(usersInfo);
         collection.insertMany(usersInfo, {w: 1}, function (err, result) {
-
 
         });
 
@@ -33,14 +33,29 @@ const initDatabase = () => {
     });
 };
 
+/**
+ * Clean DB
+ */
+const clearDatabase = () => {
 
+    MongoClient.connect("mongodb://localhost:27017/exampleDb", function (err, database) {
+        if (err) {
+            return console.dir(err);
+        }
+        const myAwesomeDB = database.db('exampleDb');
+        var collection = myAwesomeDB.collection('test');
 
+        collection.remove();
+        database.close();
+
+    });
+};
 
 /**
  * The server that will listen to mobile requests
  * Example of valid post request:
  *  curl -H "Content-type:application/json"
- *  --data '{"data": {
+ *  --data '{
  *  "firstName": "Mihai",
  *  "lastName": "Dumitru",
  * "cnp": "1931122345612",
@@ -51,15 +66,15 @@ const initDatabase = () => {
  * "dateOfExpiry": "",
  * "voteType":"prezidential",
  * "voteChoice": "Presedinte1",
- * "timeStamp": "31-08-2018" }}' http://localhost:3005/sendVote
+ * "timeStamp": "31-08-2018"}' http://localhost:3005/sendVote
  */
-const initAndroidListenerServer = () => {
+  const initAndroidListenerServer = () => {
 
     const app = express();
     app.use(bodyParser.json());
 
     app.post('/sendVote', (req, res) => {
-        const person = req.body.data;
+        const person = req.body;
         if (person !== null) {
             queryForPersonAndSendToMiner(person, sendToMiner, (message) => {
                 console.log("Response to android", message);
@@ -115,7 +130,7 @@ const queryForPersonAndSendToMiner = (person, sendToMiner, responseToAndroid) =>
               console.log("Item searched", infoReturned !== null);
               if (infoReturned !== null) {
                   if (checkPersonValidity(person, infoReturned)) {
-                      if (infoReturned.voted !== true) {
+                      if (infoReturned.votes !== null) {
                           sendToMiner(
                               {
                                   region: person.region,
@@ -157,6 +172,6 @@ const checkPersonValidity = (person, infoReturned) => {
 
 initDatabase();
 initAndroidListenerServer();
-
+//clearDatabase();
 // showAllBlocks(receivedBlocks);
 //console.log("Found person", queryForPersonAndSendToMiner({mykey:1}));

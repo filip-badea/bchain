@@ -1,6 +1,4 @@
 import WebSocket from 'ws';
-import {Server} from 'ws';
-
 
 import {addBlockToChain, getBlockchain, getLastBlock, isValidBlockStructure, replaceChain} from './blockchain';
 
@@ -14,6 +12,30 @@ var MessageType = {
     QUERY_ALL: 1,
     RESPONSE_BLOCKCHAIN: 2
 };
+
+
+var queryChainLengthMsg = () => ({'type': MessageType.QUERY_LATEST});
+
+var queryAllMsg = () => ({'type': MessageType.QUERY_ALL});
+
+var responseChainMsg = () =>({
+      'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(getBlockchain())
+  });
+
+var responseLatestMsg = () => ({
+      'type': MessageType.RESPONSE_BLOCKCHAIN,
+      'data': JSON.stringify([getLastBlock()])
+  });
+
+
+const write = (ws, message) => ws.send(JSON.stringify(message));
+const broadcast = (message) => sockets.forEach((socket) => write(socket, message));
+
+
+const broadcastLatest = () => {
+    broadcast(responseLatestMsg());
+};
+
 
 
 var initP2PServer = (p2p_port) => {
@@ -62,6 +84,7 @@ var initErrorHandler = (ws) => {
 
 
 
+
 const handleBlockchainResponse = (message) => {
     var receivedBlocks = JSON.parse(message.data).sort((b1, b2) => (b1.index - b2.index));
     if (receivedBlocks.length === 0) {
@@ -81,14 +104,15 @@ const handleBlockchainResponse = (message) => {
         console.log('blockchain possibly behind. We got: '
             + latestBlockHeld.index + ' Peer got: ' + latestBlockReceived.index);
         if (latestBlockHeld.hash === latestBlockReceived.previousHash) {
+          console.log('The last block received is the one to follow');
             if (addBlockToChain(latestBlockReceived)) {
                 broadcast(responseLatestMsg());
             }
         } else if (receivedBlocks.length === 1) {
-            console.log('We have to query the chain from our peer');
+            console.log('We have to query the chain from our peers');
             broadcast(queryAllMsg());
         } else {
-            console.log('Received blockchain is longer than current blockchain');
+            console.log('Received blockchain is longer by more than 1, than current blockchain');
             replaceChain(receivedBlocks);
         }
     } else {
@@ -105,29 +129,6 @@ var connectToPeers = (newPeers) => {
         });
     });
 };
-
-const write = (ws, message) => ws.send(JSON.stringify(message));
-const broadcast = (message) => sockets.forEach((socket) => write(socket, message));
-
-
-const broadcastLatest = () => {
-    broadcast(responseLatestMsg());
-};
-
-
-
-  var queryChainLengthMsg = () => ({'type': MessageType.QUERY_LATEST});
-
-  var queryAllMsg = () => ({'type': MessageType.QUERY_ALL});
-
-  var responseChainMsg = () =>({
-      'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(getBlockchain())
-  });
-
-  var responseLatestMsg = () => ({
-      'type': MessageType.RESPONSE_BLOCKCHAIN,
-      'data': JSON.stringify([getLastBlock()])
-  });
 
 
 

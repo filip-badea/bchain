@@ -1,0 +1,1 @@
+curl -H "Content-type:application/json" --data '{"firstName": "Mihai", "lastName": "Dumitru", "cnp": "1931122345612", "fullAddress": "", "region": "Valcea", "sex": "M",  "dateOfBirth": "12-10-1993", "dateOfExpiry": "11-10-2018", "voteType":"prezidential", "voteChoice": "Presedinte1",  "timeStamp": "31-08-2018"}' http://localhost:3005/sendVote
